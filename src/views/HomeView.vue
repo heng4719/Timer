@@ -20,7 +20,7 @@
     <div class="btn-list">
       <van-button @click="custom"
         color=" linear-gradient(to right, #0aa0ee, #1989FA)" class="btn custom-btn">
-        自定义
+        {{isCustom?"完成":"自定义"}}
       </van-button>
       <van-button @click="start"
         color="linear-gradient(to right, #ff6034, #ee0a24)" class="btn">
@@ -31,19 +31,29 @@
 
     <!-- 添加计时弹窗 -->
     <van-popup v-model="isShowPopup" round position="bottom" >
-      <div class="popup-title">添加计时计划</div>
+      <div class="popup-title">{{ popupTitle }}</div>
       <div class="popup-content">
         <van-cell-group>
-          <van-field v-model="timerName" label="计时名称" placeholder="请输入名称" maxlength="8" input-align="right"/>
-          <!-- <van-cell title="单元格" is-link value="内容" /> -->
-          <van-cell is-link @click="()=>{isShowTimerPopup = true; currentIndex = index}" title-style="text-align: left;"
-            v-for="(node, index) in nodes" title="设置时长" :value="node" :key="index"/>
-          <van-cell is-link @click="()=>{this.nodes.push('00:00')}">            
+          <van-field v-model="timerName" label="计时名称" placeholder="请输入名称" required @input="inputTitle" maxlength="8" input-align="right"/>
+          <div class="warningText" v-if="!hasPopupTitle">* 请输入名称</div>
+          <!-- <van-cell is-link @click="setTimer(node, index)" title-style="text-align: left;"
+            v-for="(node, index) in nodes" title="设置时长" :value="node" :key="index"/> -->
+
+            <van-swipe-cell v-for="(node, index) in nodes" :key="index">
+              <van-cell is-link @click="setTimer(node, index)" title-style="text-align: left;" title="设置时长" :value="node"/>
+              <template #right>
+                <van-button square type="danger" text="删除" @click="removeTimer(index)"/>
+              </template>
+            </van-swipe-cell>
+
+          <van-cell is-link @click="()=>{this.nodes.push('00:00'); this.showWarning = false}">            
             <span class="custom-title">添加节点</span>
             <template #right-icon>
               <van-icon name="plus" style="margin-right:2px"/>
             </template>
           </van-cell>
+          <div class="warningText" v-if="showWarning">* 计时不可为空或为零，请设置计时节点</div>
+
           <van-button type="primary" size="large" class="popup-btn" @click="submit">保存</van-button>
         </van-cell-group>
       </div>
@@ -69,28 +79,45 @@ export default {
       checkedId: 0,
       currentTime: '00:00',
       currentIndex: 0,
+      currentId: -1, //新增/修改计划的id
       timerName:"",
+      popupTitle:"",
       nodes:['00:00'],
+      hasPopupTitle: true,
+      showWarning: false,
       list:[
         {
           id: 0,
           title: "C2刷脸提醒计时",
-          nodes: ['12:00', '25:00', '36:00']
+          nodes: ['00:12', '00:25', '00:36']
         },
         {
           id: 1,
           title: "25分钟番茄计时",
-          nodes: ['25:00']
+          nodes: ['00:25']
         },
         {
           id: 2,
           title: "10分钟提醒计时",
-          nodes: ['10:00']
+          nodes: ['00:10']
         }
       ]
     }
   },
   methods:{
+    removeTimer(v){
+      this.nodes.splice(v, 1)
+    },
+    inputTitle(v){
+      if(v.length > 0){
+        this.hasPopupTitle = true
+      }
+    },
+    setTimer(node, index){
+      this.currentTime = node
+      this.currentIndex = index
+      this.isShowTimerPopup = true
+    },
     custom(){
       this.isCustom = !this.isCustom
     },
@@ -107,10 +134,16 @@ export default {
       if(!this.isCustom){
         return
       }
-      console.log("editItem", item)
+      this.currentId = item.id
+      this.timerName = item.title
+      this.nodes = item.nodes
+      this.popupTitle = "修改计时计划"
+      this.isShowPopup = true
 
     },
     showPopup(){
+      this.clearForm()
+      this.popupTitle = "添加计时计划"
       this.isShowPopup = true
     },
     formatter(type, val){
@@ -120,16 +153,46 @@ export default {
       this.nodes[this.currentIndex] = v
       this.isShowTimerPopup = !this.isShowTimerPopup
       this.currentTime = '00:00'
+      this.showWarning = false
     },
     submit(){
-      this.list.push({
-        id: this.list[this.list.length - 1].id + 1,
-        title: this.timerName,
-        nodes: this.nodes
-      })
+      if(this.timerName.length == 0) {
+        this.hasPopupTitle = false
+        return
+      }
+      if(this.nodes.length == 0){
+        this.showWarning = true
+        return
+      }
+      if(this.nodes.length == 1 && this.nodes[0] == "00:00"){
+        this.showWarning = true
+        return
+      }
+      if(this.currentId > -1){
+        for(let i = 0; i < this.list.length; i++){
+          if(this.list[i].id == this.currentId){
+            this.list[i].nodes = this.nodes
+            this.list[i].title = this.timerName
+            break
+          }
+        }
+      }else{
+        this.list.push({
+          id: this.list[this.list.length - 1].id + 1,
+          title: this.timerName,
+          nodes: this.nodes
+        })
+      }
       this.isShowPopup = false
     },
-    start(){}
+    start(){},
+    clearForm(){
+      this.hasPopupTitle = true
+      this.showWarning = false
+      this.currentId = -1
+      this.timerName = ""
+      this.nodes = []
+    }
   }
 }
 </script>
@@ -221,5 +284,10 @@ export default {
   height: 35px;
   margin: 10px 0;
   border-radius: 5px;
+}
+.warningText{
+  text-align: right;
+  font-size: 12px;
+  color: red;
 }
 </style>
