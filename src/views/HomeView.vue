@@ -77,6 +77,7 @@ export default {
       isShowPopup:false,
       isShowTimerPopup: false,
       checkedId: 0,
+      checkedItem:{},
       currentTime: '00:00',
       currentIndex: 0,
       currentId: -1, //新增/修改计划的id
@@ -104,6 +105,9 @@ export default {
       ]
     }
   },
+  mounted(){
+    this.checkedItem = this.list[0]
+  },
   methods:{
     removeTimer(v){
       this.nodes.splice(v, 1)
@@ -123,6 +127,7 @@ export default {
     },
     changeItem(item){
       this.checkedId = item.id
+      this.checkedItem = item
     },
     remove(item){
         let tempList = this.list.filter((v)=>{
@@ -185,7 +190,13 @@ export default {
       }
       this.isShowPopup = false
     },
-    start(){},
+    start(){
+      // this.$router.push(`/timer?item=${JSON.stringify(this.checkedItem)}`)
+      this.$router.push({
+        name:"timer",
+        query: this.checkedItem
+      })
+    },
     clearForm(){
       this.hasPopupTitle = true
       this.showWarning = false
