@@ -8,6 +8,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 export default {
     data(){
         return {
@@ -16,10 +17,14 @@ export default {
             nodes:[]
         }
     },
+    computed: {
+        ...mapState('display-data', ['timeLine']),
+    },
     mounted(){
         this.id = this.$route.query.id
         this.title = this.$route.query.title
         this.nodes = this.$route.query.nodes
+        this.$store.commit('updateCount', 1)
     },
     methods:{
         goBack(){
