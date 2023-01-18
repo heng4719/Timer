@@ -5,12 +5,11 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state:{
-    count: 0
+    timerInfo: {},
   },
   mutations:{
-    updateCount(state, value){
-      console.log("updateCount", value)
-      state.count = value
+    updateTimerInfo(state, value){
+      state.timerInfo = value
     }
   }
 })

@@ -95,7 +95,7 @@ export default {
         {
           id: 1,
           title: "25分钟番茄计时",
-          nodes: ['00:25']
+          nodes: ['01:25', '12:02', '00:12', '00:05']
         },
         {
           id: 2,
@@ -107,6 +107,7 @@ export default {
   },
   mounted(){
     this.checkedItem = this.list[0]
+    this.$store.commit('updateTimerInfo', this.checkedItem)
   },
   methods:{
     removeTimer(v){
@@ -127,7 +128,8 @@ export default {
     },
     changeItem(item){
       this.checkedId = item.id
-      this.checkedItem = item
+      this.checkedItem = item      
+      this.$store.commit('updateTimerInfo', this.checkedItem)
     },
     remove(item){
         let tempList = this.list.filter((v)=>{
@@ -173,6 +175,30 @@ export default {
         this.showWarning = true
         return
       }
+      let tempList = []
+      this.nodes.forEach(node => {
+        node = parseInt(String(node).replace(":", ""))
+        tempList.push(node)
+      });
+      tempList.sort((a,b)=>{return a-b})
+      let tempList2 = []
+      tempList.forEach(item => {
+        if(item < 10) {
+          tempList2.push(`00:0${item}`)
+        }
+        else if(10 <= item && item <= 59) {
+          tempList2.push(`00:${item}`)
+        }
+        else if(100 <= item && item <= 959) {
+          tempList2.push(`0${parseInt(item/100)}:${item%100}`)
+        }
+        else if(1000 <= item) {
+          tempList2.push(String(item).slice(0,2) + ":" + String(item).slice(2,4))
+        }
+      })
+      console.log("tempList2", tempList2)
+      this.nodes = tempList2
+
       if(this.currentId > -1){
         for(let i = 0; i < this.list.length; i++){
           if(this.list[i].id == this.currentId){
@@ -189,6 +215,9 @@ export default {
         })
       }
       this.isShowPopup = false
+    },
+    sortArr(){
+
     },
     start(){
       // this.$router.push(`/timer?item=${JSON.stringify(this.checkedItem)}`)
