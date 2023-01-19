@@ -31,56 +31,44 @@ export default {
         initChart(){
             this.myChart = echarts.init(document.getElementById('main'));
             var option;
-            this.gaugeData = [
-              {
-                value: 20,
-                name: 'Perfect',
+            for(let i = this.timerInfo.nodes.length - 1; i > -1; i--){              
+              let hours = parseInt(String(this.timerInfo.nodes[i]).split(":")[0])
+              let minutes = parseInt(String(this.timerInfo.nodes[i]).split(":")[1])
+              let totalSec = parseInt((hours * 60 + minutes) * 60)
+              this.gaugeData.push({
+                value: totalSec,
+                name: '',
                 title: {
                   show:false,
                 },
                 detail: {
-                  show:false,
+                  show:true,
+                  offsetCenter: ['0%', `-${i * 20}%`]
                 }
-              },
-              {
-                value: 40,
-                name: 'Good',
-                title: {
-                  show:false,
-                },
-                detail: {
-                  show:false,
-                }
-              },
-              {
-                value: 60,
-                name: 'Commonly',
-                title: {
-                  show:false,
-                },
-                detail: {
-                  show:false,
-                }
-              }
-            ];
+              })
+            }
+            console.log("this.gaugeData",this.gaugeData)
             option = {
               series: [
                 {
                   type: 'gauge',
                   startAngle: 90,
                   endAngle: -270,
+                  min: 0,
+                  max: this.gaugeData[0].value,
                   pointer: {
                     show: false
                   },
                   progress: {
                     show: true,
-                    overlap: false,
+                    overlap: true,
                     roundCap: true,
-                    clip: false,
+                    clip: true,
+                    width:30,
                   },
                   axisLine: {
                     lineStyle: {
-                      width: 40
+                      width: 30
                     }
                   },
                   splitLine: {
@@ -104,10 +92,10 @@ export default {
                     height: 14,
                     fontSize: 14,
                     color: 'inherit',
-                    borderColor: 'inherit',
-                    borderRadius: 20,
-                    borderWidth: 1,
-                    formatter: '{value}%'
+                    // borderColor: 'inherit',
+                    // borderRadius: 20,
+                    // borderWidth: 1,
+                    // formatter: '{value}%'
                   }
                 }
               ]
@@ -125,19 +113,19 @@ export default {
             }
             let that = this
             this.task = setInterval(function () {
-                that.gaugeData[0].value = that.gaugeData[0].value -0.1 <= 0  ? 0 : that.gaugeData[0].value -0.1;
-                that.gaugeData[1].value = that.gaugeData[1].value -0.1 <= 0  ? 0 : that.gaugeData[1].value -0.1;
-                that.gaugeData[2].value = that.gaugeData[2].value -0.1 <= 0  ? 0 : that.gaugeData[2].value -0.1;
-                that.myChart.setOption({
-                  series: [
-                    {
-                      data: that.gaugeData,
-                      pointer: {
-                        show: false
-                      }
+              that.gaugeData.forEach(item => {
+                item.value = parseFloat(item.value -0.1 <= 0  ? 0 : item.value -0.1).toFixed(3);                
+              });
+              that.myChart.setOption({
+                series: [
+                  {
+                    data: that.gaugeData,
+                    pointer: {
+                      show: false
                     }
-                  ]
-                });
+                  }
+                ]
+              });
             }, 100);            
         },
         stopCount(){
