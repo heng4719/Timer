@@ -49,6 +49,7 @@ export default {
             }
             console.log("this.gaugeData",this.gaugeData)
             option = {
+              animationDurationUpdate:0,
               series: [
                 {
                   type: 'gauge',
@@ -114,7 +115,7 @@ export default {
             let that = this
             this.task = setInterval(function () {
               that.gaugeData.forEach(item => {
-                item.value = parseFloat(item.value -0.1 <= 0  ? 0 : item.value -0.1).toFixed(3);                
+                item.value = parseFloat(item.value - 0.1 <= 0  ? 0 : item.value - 0.1).toFixed(3);                
               });
               that.myChart.setOption({
                 series: [
